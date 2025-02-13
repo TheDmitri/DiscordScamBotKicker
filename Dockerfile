@@ -18,6 +18,13 @@ COPY package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/config ./config
 COPY .env .env
+
+# Create config directory and set permissions
+RUN mkdir -p /app/config && chown -R node:node /app
+
+# Switch to non-root user
+USER node
 
 CMD ["node", "dist/main"]

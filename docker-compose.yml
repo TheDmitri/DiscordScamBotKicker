@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  discord-bot:
+    build: .
+    container_name: discord-scam-bot
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config
+      - ./.env:/app/.env:ro
+    environment:
+      - NODE_ENV=production
+    # For better log handling
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
