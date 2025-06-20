@@ -13,7 +13,7 @@
 </div>
 
 <p align="center">
-  <img src="https://i.imgur.com/8bFOLuJ.png" alt="Discord Bot Banner" width="600">
+  <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.recursosdeautoayuda.com%2Fwp-content%2Fuploads%2F2019%2F08%2Fchuck-norris-patada.jpg&f=1&nofb=1&ipt=6c8298727ba45e604e99b7616038cfadc190366364ad9f0301333455e832ea8c" alt="Discord Bot Banner" width="600">
 </p>
 
 ## 🛡️ The Problem
