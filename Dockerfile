@@ -12,20 +12,23 @@ RUN npm run build
 # Production stage
 FROM node:18-alpine
 
+# Install su-exec for secure user switching
+RUN apk add --no-cache su-exec
+
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
+COPY docker-entrypoint.sh /usr/local/bin/
 
-# Create config directory
-# Note: .env is mounted as a volume at runtime (see docker-compose.yml)
-RUN mkdir -p /app/config
+# Create config directory and set ownership to node user
+RUN mkdir -p /app/config && \
+    chown -R node:node /app && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Copy config files if they exist (optional)
-COPY --from=builder /app/config ./config 2>/dev/null || true
-
-# Note: Running as root to ensure write permissions to mounted volumes
-# This is acceptable for a single-purpose bot container
-CMD ["node", "dist/main"]
+# Note: Container starts as root to fix volume permissions, then switches to node user
+# Use entrypoint script to handle permissions
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["su-exec", "node", "node", "dist/main"]
