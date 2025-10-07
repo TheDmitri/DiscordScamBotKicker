@@ -302,6 +302,8 @@ export class DiscordService implements OnModuleInit {
           const username = interaction.options.getString('username', true);
           const reason = interaction.options.getString('reason', true);
           
+          this.logger.log(`Attempting to add user "${username}" to whitelist`);
+          
           const success = await this.addToWhitelist(username, reason);
           
           if (success) {
@@ -310,10 +312,23 @@ export class DiscordService implements OnModuleInit {
               ephemeral: true 
             });
           } else {
-            await interaction.reply({ 
-              content: `⚠️ **${username}** is already in the whitelist.`, 
-              ephemeral: true 
-            });
+            // Get current whitelist to show in error
+            const currentList = await this.getWhitelistedUsers();
+            const existingMatch = currentList.find(u => 
+              u.username.toLowerCase().trim() === username.toLowerCase().trim()
+            );
+            
+            if (existingMatch) {
+              await interaction.reply({ 
+                content: `⚠️ **${username}** is already in the whitelist as "${existingMatch.username}".`, 
+                ephemeral: true 
+              });
+            } else {
+              await interaction.reply({ 
+                content: `❌ Failed to add **${username}** to the whitelist. Check logs for details.`, 
+                ephemeral: true 
+              });
+            }
           }
           break;
         }

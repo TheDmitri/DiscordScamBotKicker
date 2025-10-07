@@ -56,9 +56,9 @@ export class WhitelistService {
       const data = await fs.readFile(this.whitelistPath, 'utf8');
       const whitelist: WhitelistData = JSON.parse(data);
       this.whitelistedUsers = new Set(
-        whitelist.whitelistedUsers.map((user: WhitelistedUser) => user.username.toLowerCase())
+        whitelist.whitelistedUsers.map((user: WhitelistedUser) => user.username.toLowerCase().trim())
       );
-      this.logger.log(`Loaded ${this.whitelistedUsers.size} whitelisted users`);
+      this.logger.log(`Loaded ${this.whitelistedUsers.size} whitelisted users: ${Array.from(this.whitelistedUsers).join(', ')}`);
     } catch (error) {
       this.logger.error('Failed to load whitelist:', error);
       throw error;
@@ -73,8 +73,8 @@ export class WhitelistService {
         this.whitelistPath,
         JSON.stringify(whitelist, null, 2)
       );
-      this.whitelistedUsers = new Set(users.map((user: WhitelistedUser) => user.username.toLowerCase()));
-      this.logger.log('Whitelist saved successfully');
+      this.whitelistedUsers = new Set(users.map((user: WhitelistedUser) => user.username.toLowerCase().trim()));
+      this.logger.log(`Whitelist saved successfully (${users.length} users)`);
     } catch (error) {
       this.logger.error('Failed to save whitelist:', error);
       throw error;
@@ -91,17 +91,23 @@ export class WhitelistService {
         whitelist = { whitelistedUsers: [] };
       }
 
-      const normalizedUsername = username.toLowerCase();
+      const normalizedUsername = username.toLowerCase().trim();
       
-      if (!whitelist.whitelistedUsers.some((user: WhitelistedUser) => 
-        user.username.toLowerCase() === normalizedUsername
-      )) {
-        whitelist.whitelistedUsers.push({ username, reason });
-        await this.saveWhitelist(whitelist.whitelistedUsers);
-        this.logger.log(`Added user ${username} to whitelist`);
-        return true;
+      // Check if user already exists
+      const existingUser = whitelist.whitelistedUsers.find((user: WhitelistedUser) => 
+        user.username.toLowerCase().trim() === normalizedUsername
+      );
+
+      if (existingUser) {
+        this.logger.warn(`User ${username} already exists in whitelist as "${existingUser.username}"`);
+        return false;
       }
-      return false;
+
+      // Add new user
+      whitelist.whitelistedUsers.push({ username, reason });
+      await this.saveWhitelist(whitelist.whitelistedUsers);
+      this.logger.log(`Added user ${username} to whitelist`);
+      return true;
     } catch (error) {
       this.logger.error('Failed to add user to whitelist:', error);
       return false;
