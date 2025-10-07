@@ -19,9 +19,9 @@ RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/config ./config
-COPY .env .env
 
 # Create config directory and set permissions
+# Note: .env is mounted as a volume at runtime (see docker-compose.yml)
 RUN mkdir -p /app/config && chown -R node:node /app
 
 # Switch to non-root user
