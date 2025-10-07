@@ -9,7 +9,7 @@ import { MessagesService } from '../messages/messages.service';
 export class DiscordService implements OnModuleInit {
   private readonly client: Client;
   private readonly logger = new Logger(DiscordService.name);
-  private readonly MINIMUM_ACCOUNT_AGE = 6; // months
+  private readonly MINIMUM_ACCOUNT_AGE = 12; // months
   private readonly SCAM_KEYWORDS = [
     'dayz modder',
     'dayz coder',
