@@ -125,31 +125,40 @@ export class DiscordService implements OnModuleInit {
 
   private async checkProfileForScamPatterns(member: GuildMember): Promise<boolean> {
     try {
-      // Fetch the full user to get their bio/about me
+      // Fetch the full user profile
       const user = await member.user.fetch(true);
-      const bio = user.bio?.toLowerCase() || '';
       
-      if (!bio) {
+      // In Discord.js v14, we check the global name, username, and display name
+      // Note: Discord's "About Me" is not directly accessible via the API
+      // We'll check username, global name, and any custom status
+      const displayName = (member.displayName || '').toLowerCase();
+      const username = (user.username || '').toLowerCase();
+      const globalName = (user.globalName || '').toLowerCase();
+      
+      // Combine all text fields that might contain scam patterns
+      const textToCheck = `${displayName} ${username} ${globalName}`.toLowerCase();
+      
+      if (!textToCheck.trim()) {
         return false;
       }
 
-      // Check if bio contains any scam keywords
+      // Check if any text contains scam keywords
       const hasScamKeyword = this.SCAM_KEYWORDS.some(keyword => 
-        bio.includes(keyword.toLowerCase())
+        textToCheck.includes(keyword.toLowerCase())
       );
 
       if (hasScamKeyword) {
-        this.logger.warn(`User ${member.user.tag} has suspicious profile description (keyword match): "${user.bio}"`);
+        this.logger.warn(`User ${member.user.tag} has suspicious profile (keyword match): "${textToCheck}"`);
         return true;
       }
 
       // Check for multiple game mentions (common scam pattern)
       const hasMultiGamePattern = this.MULTI_GAME_PATTERNS.some(pattern => {
-        return pattern.every(game => bio.includes(game.toLowerCase()));
+        return pattern.every(game => textToCheck.includes(game.toLowerCase()));
       });
 
       if (hasMultiGamePattern) {
-        this.logger.warn(`User ${member.user.tag} has suspicious profile description (multi-game pattern): "${user.bio}"`);
+        this.logger.warn(`User ${member.user.tag} has suspicious profile (multi-game pattern): "${textToCheck}"`);
         return true;
       }
 

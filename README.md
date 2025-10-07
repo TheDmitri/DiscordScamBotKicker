@@ -39,7 +39,7 @@ This Discord bot automatically protects your server by:
 ## ✨ Key Features
 
 - **🔍 Account Age Verification**: Automatically checks the age of new members joining the server
-- **🕵️ Profile Description Analysis**: Detects suspicious patterns in user bios (DayZ modder, Arma 3 coder, game developer, etc.)
+- **🕵️ Profile Analysis**: Detects suspicious patterns in usernames and display names (DayZ modder, Arma 3 coder, game developer, etc.)
 - **👢 Automated Moderation**: Kicks accounts that are less than 6 months old OR have suspicious profile descriptions
 - **😄 Humorous Messaging**: Sends funny kick messages in Chuck Norris/Bruce Lee style
 - **⚪ Whitelist System**: Maintains exceptions for trusted users
@@ -214,8 +214,8 @@ The bot uses a two-tier detection system:
    - Accounts younger than 6 months are automatically kicked
    - This catches most fresh scam accounts
 
-2. **Profile Description Analysis** (Accounts 6+ months old)
-   - Scans user bio/about me for suspicious keywords:
+2. **Profile Analysis** (Accounts 6+ months old)
+   - Scans username, display name, and global name for suspicious keywords:
      - "dayz modder", "dayz coder", "dayz developer"
      - "arma 3", "arma3", "arma reforger"
      - "fivem dev", "assisting dev"
@@ -248,9 +248,9 @@ If you need to reset the whitelist:
 - Check if the bot has the required permissions in your Discord server
 - View the logs for any error messages: `docker-compose logs -f`
 
-### Profile Description Not Being Checked
-- The bot needs to fetch user profiles, which requires the user to be in a mutual server
-- Some users may have privacy settings that prevent bio fetching
+### Profile Analysis Not Working
+- The bot checks usernames, display names, and global names (not the "About Me" section, as it's not accessible via Discord API)
+- Scammers often put suspicious keywords in their display names
 - Check logs for any errors related to profile fetching
 
 ## 🧪 Testing
