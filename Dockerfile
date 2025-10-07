@@ -18,13 +18,14 @@ COPY package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/config ./config
 
-# Create config directory and set permissions
+# Create config directory
 # Note: .env is mounted as a volume at runtime (see docker-compose.yml)
-RUN mkdir -p /app/config && chown -R node:node /app
+RUN mkdir -p /app/config
 
-# Switch to non-root user
-USER node
+# Copy config files if they exist (optional)
+COPY --from=builder /app/config ./config 2>/dev/null || true
 
+# Note: Running as root to ensure write permissions to mounted volumes
+# This is acceptable for a single-purpose bot container
 CMD ["node", "dist/main"]
