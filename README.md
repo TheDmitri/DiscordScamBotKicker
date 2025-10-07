@@ -30,16 +30,21 @@ Discord communities are increasingly targeted by scam accounts that:
 
 This Discord bot automatically protects your server by:
 1. **Detecting new members** with accounts younger than 6 months
-2. **Automatically removing** these high-risk accounts
-3. **Sending humorous messages** to kicked users with information on how to get whitelisted
-4. **Maintaining a whitelist** for trusted users with newer accounts
+2. **Analyzing profile descriptions** for scam patterns (DayZ modder, Arma 3 coder, etc.) on accounts older than 6 months
+3. **Automatically removing** these high-risk accounts
+4. **Sending humorous messages** to kicked users with information on how to get whitelisted
+5. **Maintaining a whitelist** for trusted users with newer accounts
+6. **Owner-only commands** for managing the whitelist via Discord
 
 ## ✨ Key Features
 
 - **🔍 Account Age Verification**: Automatically checks the age of new members joining the server
-- **👢 Automated Moderation**: Kicks accounts that are less than 6 months old
+- **🕵️ Profile Description Analysis**: Detects suspicious patterns in user bios (DayZ modder, Arma 3 coder, game developer, etc.)
+- **👢 Automated Moderation**: Kicks accounts that are less than 6 months old OR have suspicious profile descriptions
 - **😄 Humorous Messaging**: Sends funny kick messages in Chuck Norris/Bruce Lee style
 - **⚪ Whitelist System**: Maintains exceptions for trusted users
+- **🎮 Discord Slash Commands**: Owner-only `/whitelist` command for easy management
+- **🔒 Owner-Only Access**: Whitelist commands restricted to bot owner via Discord ID
 - **📊 Comprehensive Logging**: Detailed logs of all actions for monitoring
 - **🐳 Docker Support**: Easy deployment with Docker and Docker Compose
 - **🔄 CI/CD Integration**: GitHub Actions workflow for testing and deployment
@@ -117,11 +122,38 @@ npm run start:prod
 # Discord Bot Token
 DISCORD_TOKEN=your_discord_bot_token_here
 
+# Discord Owner ID (Your Discord User ID - right click your profile and copy ID)
+OWNER_DISCORD_ID=your_discord_user_id_here
+
 # Node Environment
 NODE_ENV=development
 ```
 
+**How to get your Discord User ID:**
+1. Enable Developer Mode in Discord (User Settings > Advanced > Developer Mode)
+2. Right-click your username/profile anywhere in Discord
+3. Click "Copy User ID"
+4. Paste this ID into the `OWNER_DISCORD_ID` field in your `.env` file
+
 ### Whitelist Management
+
+#### Option 1: Discord Slash Commands (Recommended)
+
+Use the `/whitelist` command in Discord (owner only):
+
+```
+/whitelist add username:JohnDoe reason:Trusted friend
+/whitelist remove username:JohnDoe
+/whitelist list
+```
+
+**Features:**
+- ✅ Add users to the whitelist with a reason
+- ❌ Remove users from the whitelist
+- 📋 List all whitelisted users
+- 🔒 Only accessible by the bot owner (configured via `OWNER_DISCORD_ID`)
+
+#### Option 2: Manual File Editing
 
 The whitelist file is located at `./config/whitelist.json`:
 
@@ -172,7 +204,37 @@ The container is configured to rotate logs:
 - Maximum log file size: 10MB
 - Maximum number of log files: 3
 
+## 🛡️ How It Works
+
+### Detection Logic
+
+The bot uses a two-tier detection system:
+
+1. **Account Age Check** (All accounts)
+   - Accounts younger than 6 months are automatically kicked
+   - This catches most fresh scam accounts
+
+2. **Profile Description Analysis** (Accounts 6+ months old)
+   - Scans user bio/about me for suspicious keywords:
+     - "dayz modder", "dayz coder", "dayz developer"
+     - "arma 3", "arma3", "arma reforger"
+     - "fivem dev", "assisting dev"
+     - "game modder", "game developer", "mod developer"
+     - "script developer", "passionate about scripting"
+     - "building immersive", "sim racing", "flight sim"
+   - Detects multi-game patterns (e.g., mentioning both FiveM + DayZ, or Arma + DayZ)
+   - Kicks users with matching patterns (case-insensitive)
+
+3. **Whitelist Bypass**
+   - Whitelisted users bypass all checks
+   - Managed via Discord commands or manual file editing
+
 ## 🔧 Troubleshooting
+
+### Whitelist Commands Not Working
+- Verify `OWNER_DISCORD_ID` is set correctly in your `.env` file
+- Make sure you copied your Discord User ID, not your username
+- Enable Developer Mode in Discord to access the "Copy User ID" option
 
 ### Whitelist Issues
 If you need to reset the whitelist:
@@ -182,8 +244,14 @@ If you need to reset the whitelist:
 
 ### Bot Not Responding
 - Verify your Discord token is correct in the `.env` file
+- Verify your Discord owner ID is correct in the `.env` file
 - Check if the bot has the required permissions in your Discord server
 - View the logs for any error messages: `docker-compose logs -f`
+
+### Profile Description Not Being Checked
+- The bot needs to fetch user profiles, which requires the user to be in a mutual server
+- Some users may have privacy settings that prevent bio fetching
+- Check logs for any errors related to profile fetching
 
 ## 🧪 Testing
 
